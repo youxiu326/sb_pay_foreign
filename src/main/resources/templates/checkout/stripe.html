@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <base th:href="${#httpServletRequest.getContextPath()+'/'}">
+    <meta charset="UTF-8">
+    <title>Stripe 支付</title>
+</head>
+<body>
+<h2>自定义登录页面</h2>
+<form action="#" method="post">
+    <table>
+        <tr>
+            <td>用户名：</td>
+            <td><input type="text" id="username" name="username"></td>
+        </tr>
+        <tr>
+            <td>密码：</td>
+            <td><input type="password" id="password" name="password"></td>
+        </tr>
+        <tr>
+            <td colspan="2"><button type="button" onclick="login()">登录</button></td>
+        </tr>
+    </table>
+
+</form>
+</body>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/jquery-1.11.3.min.js"></script>
+
+<script>
+
+    var stripe = Stripe('pk_test_qwSsznDPQSF0mA13NC2hUHyE000gYEo7d1');
+
+</script>
+
+
+</html>
