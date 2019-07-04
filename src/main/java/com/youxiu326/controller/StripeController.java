@@ -1,9 +1,13 @@
 package com.youxiu326.controller;
 
+import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +30,8 @@ public class StripeController {
     @Value("${stripe.apiKey}")
     private String privateKey;
 
+    @Value("${stripe.webhookSecret}")
+    private String endpointSecret;
 
     /**
      * 唤起支付页面
@@ -33,7 +42,7 @@ public class StripeController {
     public String index(Model model) {
 
         try {
-            Stripe.apiKey = "sk_test_S1xsxKPNYknXjKqUoF915Ior00oiKImo2G";
+            Stripe.apiKey = privateKey;
 
             Map<String, Object> params = new HashMap<String, Object>();
 
@@ -68,6 +77,68 @@ public class StripeController {
         return "pay";
     }
 
+
+    /**
+     * webhooks 异步通知
+     * @return
+     */
+    @PostMapping("/webhooks")
+    @ResponseBody
+    public String webhooks(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Stripe.apiKey = privateKey;
+
+        InputStream inputStream = request.getInputStream();
+        byte[] bytes = IOUtils.toByteArray(inputStream);
+        String payload = new String(bytes, "UTF-8");
+
+        String sigHeader = request.getHeader("Stripe-Signature");
+        Event event = null;
+        try {
+            event = Webhook.constructEvent(
+                    payload, sigHeader, endpointSecret
+            );
+        } catch (JsonSyntaxException e) {
+            response.setStatus(400);
+            return "";
+        } catch (SignatureVerificationException e) {
+            response.setStatus(400);
+            return "";
+        }
+
+        // Deserialize the nested object inside the event
+        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        StripeObject stripeObject = null;
+        if (dataObjectDeserializer.getObject().isPresent()) {
+            stripeObject = dataObjectDeserializer.getObject().orElse(null);
+        } else {
+            // Deserialization failed, probably due to an API version mismatch.
+            // Refer to the Javadoc documentation on `EventDataObjectDeserializer` for
+            // instructions on how to handle this case, or return an error here.
+        }
+
+        // Handle the event
+        switch (event.getType()) {
+            case "payment_intent.succeeded":
+                PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
+                //handlePaymentIntentSucceeded(paymentIntent);
+                //处理支付成功
+                System.out.println("支付成功");
+                System.out.println("支付成功");
+                System.out.println("支付成功");
+                System.out.println("支付成功");
+                break;
+            case "payment_method.attached":
+                PaymentMethod paymentMethod = (PaymentMethod) stripeObject;
+                //handlePaymentMethodAttached(paymentMethod);
+                break;
+            default:
+                response.setStatus(400);
+                return "";
+        }
+        response.setStatus(200);
+        return "";
+    }
+
     /**
      * 支付成功回调页面
      * @return
@@ -95,6 +166,21 @@ public class StripeController {
     @ResponseBody
     public String refund(String returnId) {
 
+        try {
+            Stripe.apiKey = privateKey;
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("charge", "ch_AzFPjXyE00KGmEkvwBNP");
+            params.put("amount", 500);
+            Refund refund = Refund.create(params);
+            if ("succeeded".equals(refund.getStatus())){
+                return "退款成功";
+            }else {
+                return "退款失败";
+            }
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
 
         return "退款失败";
     }
