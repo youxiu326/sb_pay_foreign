@@ -3,14 +3,12 @@ package com.youxiu326.controller;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +27,13 @@ public class PaypalController {
     private APIContext apiContext;
 
 
+    /**
+     * 唤起支付页面
+     * @param httpRequest
+     * @param httpResponse
+     * @param model
+     * @return
+     */
     @GetMapping("/")
     public String index(HttpServletRequest httpRequest, HttpServletResponse httpResponse, Model model) {
         try {
@@ -70,13 +75,11 @@ public class PaypalController {
     public String pay() {
 
 
-
-
         return "pay";
     }
 
     /**
-     * 支付成功页面
+     * 支付成功回调页面
      * @return
      */
     @GetMapping("/paySuccess")
@@ -120,6 +123,38 @@ public class PaypalController {
     @GetMapping("/payError")
     public String payError(){
         return "pay-error";
+    }
+
+
+    /**
+     * 退款
+     * @param returnId
+     * @return
+     */
+    @PostMapping("/refund")
+    @ResponseBody
+    public String refund(String returnId) {
+        try {
+            String paymentId = "123";
+            String payerId = "123";
+            Sale sale = new Sale();
+            if(StringUtils.isNotBlank(paymentId)) {
+                Payment payment = Payment.get(apiContext, paymentId);
+                sale.setId(payment.getTransactions().get(0).getRelatedResources().get(0).getSale().getId());
+            }
+            Refund refund = new Refund();
+            Amount amount = new Amount();
+            amount.setCurrency("GBP");
+            amount.setTotal("500");
+            refund.setAmount(amount);
+            RefundRequest request = new  RefundRequest();
+            request.setAmount(amount);
+            DetailedRefund detailedRefund = sale.refund(apiContext, request);
+            return "退款成功->"+detailedRefund.getId();
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+        }
+        return "退款失败";
     }
 
 } 

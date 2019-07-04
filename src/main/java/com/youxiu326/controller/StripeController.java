@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,11 @@ public class StripeController {
     private String privateKey;
 
 
+    /**
+     * 唤起支付页面
+     * @param model
+     * @return
+     */
     @GetMapping("/")
     public String index(Model model) {
 
@@ -62,7 +69,7 @@ public class StripeController {
     }
 
     /**
-     * 支付成功页面
+     * 支付成功回调页面
      * @return
      */
     @GetMapping("/paySuccess")
@@ -79,5 +86,17 @@ public class StripeController {
         return "pay-error";
     }
 
+    /**
+     * 退款
+     * @param returnId
+     * @return
+     */
+    @PostMapping("/refund")
+    @ResponseBody
+    public String refund(String returnId) {
+
+
+        return "退款失败";
+    }
 
 } 
