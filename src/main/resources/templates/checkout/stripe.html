@@ -6,21 +6,10 @@
     <title>Stripe 支付</title>
 </head>
 <body>
-<h2>自定义登录页面</h2>
 <form action="#" method="post">
-    <table>
-        <tr>
-            <td>用户名：</td>
-            <td><input type="text" id="username" name="username"></td>
-        </tr>
-        <tr>
-            <td>密码：</td>
-            <td><input type="password" id="password" name="password"></td>
-        </tr>
-        <tr>
-            <td colspan="2"><button type="button" onclick="login()">登录</button></td>
-        </tr>
-    </table>
+
+    <br>
+    <button type="button" onclick="pay()">登录</button>
 
 </form>
 </body>
@@ -28,9 +17,24 @@
 <script src="https://js.stripe.com/v3/"></script>
 <script src="/jquery-1.11.3.min.js"></script>
 
-<script>
+<script th:inline="javascript">
+
+    //根据后台生成的checkout_session_id去支付
+    var CHECKOUT_SESSION_ID = [[${CHECKOUT_SESSION_ID}]];
 
     var stripe = Stripe('pk_test_qwSsznDPQSF0mA13NC2hUHyE000gYEo7d1');
+
+
+    function pay(){
+        stripe.redirectToCheckout({
+            sessionId: CHECKOUT_SESSION_ID
+        }).then(function (result) {
+            console.log(result);
+        });
+    }
+
+
+
 
 </script>
 

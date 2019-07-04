@@ -2,52 +2,52 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <base th:href="${#httpServletRequest.getContextPath()+'/'}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="UTF-8">
     <title>Paypal 支付</title>
 </head>
-<body>
-<h2>自定义登录页面</h2>
-<form action="#" method="post">
-    <table>
-        <tr>
-            <td>用户名：</td>
-            <td><input type="text" id="username" name="username"></td>
-        </tr>
-        <tr>
-            <td>密码：</td>
-            <td><input type="password" id="password" name="password"></td>
-        </tr>
-        <tr>
-            <td colspan="2"><button type="button" onclick="login()">登录</button></td>
-        </tr>
-    </table>
 
-</form>
-</body>
+
+<body>
+<!-- Set up a container element for the button -->
+<div id="paypal-button-container"></div>
+
 
 <script src="/jquery-1.11.3.min.js"></script>
-<!--<script th:src="@{/jquery-1.11.3.min.js}"></script>-->
-<script>
-    function login(){
-        $.ajax({
-            type: 'POST',
-            url: "/user/login",
-            data: {"username":$("#username").val(),"password":$("#password").val()},
-            // dataType: "json",
-            success: function(response){
-                if(response.data=="success"){
-                    window.location.href="allPage";
-                }else{
-                    alert(response.msg);
-                }
-            },
-            error:function(response){
-                alert("失败");
-                console.log(response);
-            }
-        });
-    }
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+
+<script th:inline="javascript">
+    // Render the PayPal button into #paypal-button-container
+    paypal.Buttons({
+
+        // Set up the transaction
+        createOrder: function(data, actions) {
+            return fetch('/demo/checkout/api/paypal/order/create/', {
+                method: 'post'
+            }).then(function(res) {
+                return res.json();
+            }).then(function(data) {
+                return data.orderID;
+            });
+        },
+
+        // Finalize the transaction
+        onApprove: function(data, actions) {
+            return fetch('/demo/checkout/api/paypal/order/' + data.orderID + '/capture/', {
+                method: 'post'
+            }).then(function(res) {
+                return res.json();
+            }).then(function(details) {
+                // Show a success message to the buyer
+                alert('Transaction completed by ' + details.payer.name.given_name + '!');
+            });
+        }
+    }).render('#paypal-button-container');
 </script>
+
+</body>
+
 
 
 </html>
