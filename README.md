@@ -66,7 +66,7 @@ session json格式说明:
   "success_url": "https://example.com/success"
 }
 
-
-
+webhooks回调地址:
+http://test.youxiu326.xin/stripe/webhooks
 
 ```

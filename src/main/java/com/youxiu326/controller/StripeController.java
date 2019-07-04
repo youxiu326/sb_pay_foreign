@@ -46,6 +46,9 @@ public class StripeController {
 
             Map<String, Object> params = new HashMap<String, Object>();
 
+            //预填充客户邮箱
+            //params.put("customer_email", "youxiu326@163.com");
+
             ArrayList<String> paymentMethodTypes = new ArrayList<>();
             paymentMethodTypes.add("card");
             params.put("payment_method_types", paymentMethodTypes);
@@ -127,9 +130,11 @@ public class StripeController {
                 System.out.println("支付成功");
                 System.out.println("支付成功");
                 break;
-            case "payment_method.attached":
-                PaymentMethod paymentMethod = (PaymentMethod) stripeObject;
-                //handlePaymentMethodAttached(paymentMethod);
+            case "checkout.session.completed":
+                Session session = (Session) stripeObject;
+                //得到最开始的session
+                System.out.println(session);
+
                 break;
             default:
                 response.setStatus(400);
