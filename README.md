@@ -17,6 +17,13 @@ https://stripe.com/docs/payments/checkout/server
 
 
 ```
+回调地址都需要时https，不然报错
+
+
+```
+
+
+```
 流程说明:
 
 

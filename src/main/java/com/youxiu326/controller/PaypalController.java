@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -78,7 +80,36 @@ public class PaypalController {
      * @return
      */
     @GetMapping("/paySuccess")
-    public String paySuccess(){
+    public String paySuccess(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId, Model model){
+        try {
+            Payment payment = new Payment();
+            payment.setId(paymentId);
+            PaymentExecution paymentExecute = new PaymentExecution();
+            paymentExecute.setPayerId(payerId);
+            Payment paymentResult = payment.execute(apiContext, paymentExecute);
+
+            if(payment.getState().equals("approved")){
+                //订单编号
+                String orderCode = payment.getTransactions().get(0).getCustom();
+                //支付成功则做相应处理
+                Payment getPayment = Payment.get(apiContext, paymentId);
+                //提交到paypal的订单金额
+                String total = getPayment.getTransactions().get(0).getAmount().getTotal();
+                if(getPayment.getState().equals("approved")){
+                    //用户的邮箱
+                    String email = getPayment.getPayer().getPayerInfo().getEmail();
+
+                    //如果支付成功可以去做对应操作
+
+                    return "pay-success";
+                }else {
+                    return "redirect:paypal/payError";
+                }
+            }
+
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+        }
         return "pay-success";
     }
 
