@@ -208,8 +208,10 @@ public class StripeController {
                 //使用checkout支付成功回调
                 Session session = (Session) stripeObject;
                 System.out.println(session);
+                String paymentIntentId = session.getPaymentIntent();
+                String chargeId = PaymentIntent.retrieve(paymentIntentId).getCharges().getData().get(0).getId();
                 System.out.println(session.getClientReferenceId());//订单编号
-                //TODO 请处理支付成功业务代码
+                //TODO 请处理支付成功业务代码 并将charge id 关联在订单
                 response.setStatus(200);
                 break;
             default:
@@ -247,10 +249,10 @@ public class StripeController {
     @ResponseBody
     public String refund(String returnId) {
         try {
-            //TODO 根据退单 查询订单 查询不到有保存的charge id
-            String chargeId = "";
+            //TODO 根据退单 查询订单 查询出保存的charge id
+            String chargeId = "1111111111111";
 
-            if(true){
+            /*if(true){
                 //check out 支付 保存session Id
                 String sessionId = "cs_test_ldNnTj9YMgc347uyjzgMfmrEbAFSpYtAx1Sbs5oLTumWKJR5OdbIZSje";
                 String id = Session.retrieve(sessionId).getPaymentIntent();
@@ -259,7 +261,7 @@ public class StripeController {
                 //token 支付      保存charge Id
                 //TODO 根据退单 查询订单 查询之前保存的charge id
                 chargeId = "111111";
-            }
+            }*/
 
             Stripe.apiKey = privateKey;
 
