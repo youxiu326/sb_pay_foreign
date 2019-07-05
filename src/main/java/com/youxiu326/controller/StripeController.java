@@ -252,9 +252,9 @@ public class StripeController {
 
             if(true){
                 //check out 支付 保存session Id
-                String sessionId = "123";
-                PaymentIntent paymentIntent = Session.retrieve(sessionId).getPaymentIntentObject();
-                chargeId = paymentIntent.getCharges().getData().get(0).getId();
+                String sessionId = "cs_test_ldNnTj9YMgc347uyjzgMfmrEbAFSpYtAx1Sbs5oLTumWKJR5OdbIZSje";
+                String id = Session.retrieve(sessionId).getPaymentIntent();
+                chargeId = PaymentIntent.retrieve(id).getCharges().getData().get(0).getId();
             }else {
                 //token 支付      保存charge Id
                 //TODO 根据退单 查询订单 查询之前保存的charge id
