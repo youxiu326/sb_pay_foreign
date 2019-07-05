@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/stripe")
@@ -63,6 +63,8 @@ public class StripeController {
             lineItems.add(lineItem);
             params.put("line_items", lineItems);
 
+            //TODO 必须使用https 返回的回调地址
+            params.put("client_reference_id", UUID.randomUUID().toString());//业务系统唯一标识 即订单唯一编号
             params.put("success_url", "https://example.com/success");
             params.put("cancel_url", "https://example.com/cancel");
             Session session = Session.create(params);
@@ -127,6 +129,7 @@ public class StripeController {
                 Charge charge = Charge.create(chargeParams);
                 System.out.println(charge);
                 if ("succeeded".equals(charge.getStatus())){
+                    //TODO 此时应该将charge id 关联在订单并处理订单支付成功逻辑
                     return "支付成功";
                 }else{
                     return "支付失败";
@@ -188,13 +191,14 @@ public class StripeController {
                 //使用token支付成功回调
                 Charge charge = (Charge) stripeObject;
                 System.out.println(charge);
-                //TODO 请处理支付成功业务代码
+                //TODO 此时根据charge ID 查询出关联的订单并处理支付成功业务代码
                 response.setStatus(200);
                 break;
             case "checkout.session.completed":
                 //使用checkout支付成功回调
                 Session session = (Session) stripeObject;
                 System.out.println(session);
+                System.out.println(session.getClientReferenceId());//订单编号
                 //TODO 请处理支付成功业务代码
                 response.setStatus(200);
                 break;
