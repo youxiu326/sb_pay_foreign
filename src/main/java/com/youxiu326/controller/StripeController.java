@@ -12,6 +12,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.RefundCreateParams;
 import com.youxiu326.utils.URLUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -185,11 +186,17 @@ public class StripeController {
 
         // Handle the event
         switch (event.getType()) {
-            /*case "payment_intent.succeeded":
+            case "payment_intent.succeeded":
                 PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
                 System.out.println(paymentIntent);
                 response.setStatus(200);
-                break;*/
+                /*退款代码
+                Charge charge = paymentIntent.getCharges().getData().get(0);
+                Refund refund = Refund.create(RefundCreateParams.builder()
+                        .setCharge(charge.getId())
+                        .setAmount(500L)
+                        .build());*/
+                break;
             case "charge.succeeded":
                 //使用token支付成功回调
                 Charge charge = (Charge) stripeObject;
@@ -240,8 +247,19 @@ public class StripeController {
     @ResponseBody
     public String refund(String returnId) {
         try {
-            //TODO 根据退单 查询订单 查询之前保存的charge id
-            String chargeId = "111111";
+            //TODO 根据退单 查询订单 查询不到有保存的charge id
+            String chargeId = "";
+
+            if(true){
+                //check out 支付 保存session Id
+                String sessionId = "123";
+                PaymentIntent paymentIntent = Session.retrieve(sessionId).getPaymentIntentObject();
+                chargeId = paymentIntent.getCharges().getData().get(0).getId();
+            }else {
+                //token 支付      保存charge Id
+                //TODO 根据退单 查询订单 查询之前保存的charge id
+                chargeId = "111111";
+            }
 
             Stripe.apiKey = privateKey;
 
