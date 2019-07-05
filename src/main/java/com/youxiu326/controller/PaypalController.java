@@ -3,6 +3,7 @@ package com.youxiu326.controller;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import com.youxiu326.utils.URLUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,8 +57,12 @@ public class PaypalController {
             payment.setPayer(payer);
             payment.setTransactions(transactions);
             RedirectUrls redirectUrls = new RedirectUrls();
-            redirectUrls.setCancelUrl("https://example.com/success");
-            redirectUrls.setReturnUrl("https://example.com/cancel");
+
+
+            //redirectUrls.setCancelUrl("https://example.com/success");
+            //redirectUrls.setReturnUrl("https://example.com/cancel");
+            redirectUrls.setCancelUrl(URLUtils.getBaseURl(httpRequest)+"/paypal/pauSuccess");
+            redirectUrls.setReturnUrl(URLUtils.getBaseURl(httpRequest)+"/paypal/payError");
             payment.setRedirectUrls(redirectUrls);
             Payment paymentResult = payment.create(apiContext);
             for(Links links : paymentResult.getLinks()){
@@ -76,6 +81,17 @@ public class PaypalController {
 
 
         return "pay";
+    }
+
+    /**
+     * webhooks 异步通知
+     * @return
+     */
+    @PostMapping("/webhooks")
+    @ResponseBody
+    public String webhooks(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        response.setStatus(200);
+        return "";
     }
 
     /**
@@ -150,7 +166,10 @@ public class PaypalController {
             RefundRequest request = new  RefundRequest();
             request.setAmount(amount);
             DetailedRefund detailedRefund = sale.refund(apiContext, request);
-            return "退款成功->"+detailedRefund.getId();
+            if(StringUtils.isNotEmpty(detailedRefund.getId())  && !(detailedRefund.getId().indexOf("error:") != -1)) {
+                //TODO 执行退款成功业务代码
+                return "退款成功->"+detailedRefund.getId();
+            }
         } catch (PayPalRESTException e) {
             e.printStackTrace();
         }

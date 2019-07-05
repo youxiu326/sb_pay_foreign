@@ -1,6 +1,11 @@
 package com.youxiu326.controller;
 
 import com.google.gson.JsonSyntaxException;
+import com.paypal.api.payments.DetailedRefund;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.RefundRequest;
+import com.paypal.api.payments.Sale;
+import com.paypal.base.rest.PayPalRESTException;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -8,6 +13,7 @@ import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,13 +91,6 @@ public class StripeController {
     public String token(Model model) {
         return "token/stripe";
     }
-
-    @PostMapping("/pay")
-    public String pay() {
-
-        return "pay";
-    }
-
 
     /**
      * 客户端提交token令牌id 后，执行付费操作
@@ -236,23 +236,23 @@ public class StripeController {
     @PostMapping("/refund")
     @ResponseBody
     public String refund(String returnId) {
-
         try {
+            //TODO 根据退单 查询订单 查询之前保存的charge id
+            String chargeId = "111111";
+
             Stripe.apiKey = privateKey;
 
             Map<String, Object> params = new HashMap<>();
-            params.put("charge", "ch_AzFPjXyE00KGmEkvwBNP");
-            params.put("amount", 500);
+            params.put("charge", chargeId);
+            params.put("amount", 500); //不传退全部
             Refund refund = Refund.create(params);
             if ("succeeded".equals(refund.getStatus())){
+                //TODO 执行退款成功业务代码
                 return "退款成功";
-            }else {
-                return "退款失败";
             }
         } catch (StripeException e) {
             e.printStackTrace();
         }
-
         return "退款失败";
     }
 
