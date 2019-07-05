@@ -61,7 +61,7 @@ public class PaypalController {
 
             //redirectUrls.setCancelUrl("https://example.com/success");
             //redirectUrls.setReturnUrl("https://example.com/cancel");
-            redirectUrls.setCancelUrl(URLUtils.getBaseURl(httpRequest)+"/paypal/pauSuccess");
+            redirectUrls.setCancelUrl(URLUtils.getBaseURl(httpRequest)+"/paypal/paySuccess");
             redirectUrls.setReturnUrl(URLUtils.getBaseURl(httpRequest)+"/paypal/payError");
             payment.setRedirectUrls(redirectUrls);
             Payment paymentResult = payment.create(apiContext);

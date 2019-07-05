@@ -12,6 +12,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.youxiu326.utils.URLUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,7 +47,7 @@ public class StripeController {
      * @return
      */
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(Model model,HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
 
         try {
             Stripe.apiKey = privateKey;
@@ -72,8 +73,10 @@ public class StripeController {
 
             //TODO 必须使用https 返回的回调地址
             params.put("client_reference_id", UUID.randomUUID().toString());//业务系统唯一标识 即订单唯一编号
-            params.put("success_url", "https://example.com/success");
-            params.put("cancel_url", "https://example.com/cancel");
+            //params.put("success_url", "https://example.com/success");
+            //params.put("cancel_url", "https://example.com/cancel");
+            params.put("success_url", URLUtils.getBaseURl(httpRequest)+"/stripe/paySuccess");
+            params.put("cancel_url",  URLUtils.getBaseURl(httpRequest)+"/stripe/payError");
             Session session = Session.create(params);
             model.addAttribute("CHECKOUT_SESSION_ID",session.getId());
         } catch (StripeException e) {
