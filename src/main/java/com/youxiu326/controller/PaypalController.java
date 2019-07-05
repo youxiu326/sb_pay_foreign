@@ -28,7 +28,7 @@ public class PaypalController {
 
 
     /**
-     * 唤起支付页面
+     * checkout唤起支付页面
      * @param httpRequest
      * @param httpResponse
      * @param model

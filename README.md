@@ -24,8 +24,16 @@ https://stripe.com/docs/payments/checkout/server
 
 
 ```
+测试stripe 卡号:
+Card numbers:
+    4242424242424242
+Tokens:
+    tok_visa
+
+
+
 ①、②、③、④、⑤、⑥、⑦、⑧、⑨、⑩
-stripe流程说明:
+stripe checkout流程说明:
 ①、服务端端传入订单信息，创建session，并将session id 返回至前台
 ②、服务端取得客户端传来的session id 去支付
 ③、支付成功后会重定向至您定义的成功或者失败页面
@@ -68,5 +76,14 @@ session json格式说明:
 
 webhooks回调地址:
 http://test.youxiu326.xin/stripe/webhooks
+
+
+stripe token流程说明:
+①、客户端支付成功后，创建token，并将token id 返回至后台
+②、服务端取得客户端传来的token id 去支付创建Charge对象
+③、支付成功后将Charge id保存，后续将以Charge id 用于退款
+④、应该在webhooks 异步通知中完成最终支付(成功的回调页面不做处理)
+
+
 
 ```

@@ -34,7 +34,7 @@ public class StripeController {
     private String endpointSecret;
 
     /**
-     * 唤起支付页面
+     * checkout唤起支付页面
      * @param model
      * @return
      */
@@ -73,11 +73,69 @@ public class StripeController {
         return "checkout/stripe";
     }
 
+    /**
+     * 使用token 令牌方式支付
+     * @param model
+     * @return
+     */
+    @GetMapping("token")
+    public String token(Model model) {
+        return "token/stripe";
+    }
+
     @PostMapping("/pay")
     public String pay() {
 
-
         return "pay";
+    }
+
+
+    /**
+     * 客户端提交token令牌id 后，执行付费操作
+     * @param stripeToken
+     * @param orderCode
+     * @return
+     */
+    @PostMapping("/charge")
+    @ResponseBody
+    public String charge(String stripeToken,String orderCode) {
+        try {
+            //TODO 对orderCode 进行一系列判断
+
+            Stripe.apiKey = privateKey;
+
+            Token token = Token.retrieve(stripeToken);
+            if (token==null || token.getUsed()){
+                return "token 无效";
+            }
+
+            // Create a Customer:
+            Map<String, Object> customerParams = new HashMap<>();
+            customerParams.put("source", stripeToken);//TODO 使用了测试token tok_visa
+            customerParams.put("email", "youxiu326@163.com");
+            Customer customer = Customer.create(customerParams);
+
+            {
+                // Charge the Customer instead of the card:
+                Map<String, Object> chargeParams = new HashMap<>();
+                chargeParams.put("amount", 500);
+                //chargeParams.put("currency", "usd");//美元
+                chargeParams.put("currency", "GBP");//英镑
+                chargeParams.put("customer", customer.getId());
+                chargeParams.put("description", "这是一个测试的商品描述");
+                chargeParams.put("receipt_email", "youxiu326@163.com");//正式环境下付款成功后将会收到邮件信息
+                Charge charge = Charge.create(chargeParams);
+                System.out.println(charge);
+                if ("succeeded".equals(charge.getStatus())){
+                    return "支付成功";
+                }else{
+                    return "支付失败";
+                }
+            }
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+        return "支付失败";
     }
 
 
@@ -121,20 +179,24 @@ public class StripeController {
 
         // Handle the event
         switch (event.getType()) {
-            case "payment_intent.succeeded":
+            /*case "payment_intent.succeeded":
                 PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
-                //handlePaymentIntentSucceeded(paymentIntent);
-                //处理支付成功
-                System.out.println("支付成功");
-                System.out.println("支付成功");
-                System.out.println("支付成功");
-                System.out.println("支付成功");
+                System.out.println(paymentIntent);
+                response.setStatus(200);
+                break;*/
+            case "charge.succeeded":
+                //使用token支付成功回调
+                Charge charge = (Charge) stripeObject;
+                System.out.println(charge);
+                //TODO 请处理支付成功业务代码
+                response.setStatus(200);
                 break;
             case "checkout.session.completed":
+                //使用checkout支付成功回调
                 Session session = (Session) stripeObject;
-                //得到最开始的session
                 System.out.println(session);
-
+                //TODO 请处理支付成功业务代码
+                response.setStatus(200);
                 break;
             default:
                 response.setStatus(400);
