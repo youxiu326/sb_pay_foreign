@@ -17,6 +17,9 @@ https://stripe.com/docs/payments/checkout/server
 https://developer.paypal.com/developer/webhooksSimulator/
 <br>
 https://developer.paypal.com/developer/applications
+<br>
+https://stripe.com/docs/api#tokens
+<br>
 ```
 回调地址都需要时https，不然报错
 
