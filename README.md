@@ -20,6 +20,8 @@ https://developer.paypal.com/developer/applications
 <br>
 https://stripe.com/docs/api#tokens
 <br>
+https://stripe.com/docs/testing#international-cards
+<br>
 ```
 回调地址都需要时https，不然报错
 
